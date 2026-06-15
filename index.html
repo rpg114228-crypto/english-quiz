@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>116年班 Quiz 2 (Unit 3&4 Book 17) 即測即評</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Microsoft JhengHei', sans-serif; background: #f0f2f5; color: #333; padding-bottom: 60px; }
+
+.header { background: #2c3e50; color: white; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 10; }
+.header h1 { font-size: 1.1em; }
+.hdr-btn {
+  background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px; padding: 6px 12px; font-size: 0.85em; cursor: pointer; font-family: inherit;
+}
+.hdr-btn:hover { background: rgba(255,255,255,0.28); }
+
+.container { max-width: 760px; margin: 16px auto; padding: 0 12px; }
+
+.score-bar { background: white; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; display: none; }
+.score-bar.show { display: block; }
+.score-bar .score-num { font-size: 1.8em; font-weight: bold; color: #2c5fa8; }
+.score-bar .score-detail { font-size: 0.9em; color: #777; margin-top: 4px; }
+
+.card { background: white; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.card.correct { border-left: 5px solid #27ae60; }
+.card.wrong { border-left: 5px solid #e74c3c; }
+
+.q-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.q-num { font-weight: bold; color: #2c5fa8; }
+.q-body { line-height: 1.7; font-size: 1em; margin-bottom: 10px; }
+.blank { display: inline-block; min-width: 60px; border-bottom: 2px solid #999; }
+
+.options { display: flex; flex-direction: column; gap: 6px; }
+.option {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 0.95em;
+}
+.option:hover { background: #f7f9fc; }
+.option input { accent-color: #2c5fa8; }
+.option.opt-correct { background: #eafaf1; border-color: #27ae60; font-weight: bold; }
+.option.opt-wrong { background: #fdecea; border-color: #e74c3c; }
+
+.result-tag { font-size: 0.85em; font-weight: bold; }
+.result-tag.ok { color: #27ae60; }
+.result-tag.no { color: #e74c3c; }
+
+.footer-bar {
+  position: sticky; bottom: 0; background: white; border-top: 1px solid #ddd;
+  padding: 10px 16px; display: flex; justify-content: center; gap: 12px; box-shadow: 0 -1px 4px rgba(0,0,0,0.08);
+}
+.main-btn {
+  background: #2c5fa8; color: white; border: none; border-radius: 8px;
+  padding: 10px 24px; font-size: 1em; cursor: pointer; font-family: inherit;
+}
+.main-btn:hover { background: #234a85; }
+.main-btn.secondary { background: #95a5a6; }
+.main-btn.secondary:hover { background: #7f8c8d; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📝 116年班 Quiz 2 (Unit 3&4 Book 17) 即測即評</h1>
+  <button class="hdr-btn" onclick="shuffleAndReset()">🔀 隨機重新測驗</button>
+</div>
+
+<div class="container">
+
+  <div class="score-bar" id="scoreBar">
+    <div class="score-num" id="scoreNum"></div>
+    <div class="score-detail" id="scoreDetail"></div>
+  </div>
+
+  <div id="quizContainer"></div>
+
+</div>
+
+<div class="footer-bar">
+  <button class="main-btn" onclick="gradeQuiz()">✅ 對答案</button>
+  <button class="main-btn secondary" onclick="resetQuiz()">🔄 重新作答</button>
+</div>
+
+<script>
+const questions = [
+  { text: 'I hate wearing a suit and tie. That\'s why I don\'t like ___ situations.', options: ['national','disciplined','formal','international'], answer: 2 },
+  { text: 'The meeting was mandatory.', options: ['We wanted to go.','We indicated the time.','We had to go.','We didn\'t attend.'], answer: 2 },
+  { text: 'The national anthem is usually ___.', options: ['heard at parades','seen at work','given at weddings','confirmed'], answer: 0 },
+  { text: 'The students ___ in front of the flags before they got on the buses.', options: ['gathered','associated','supported','preceded'], answer: 0 },
+  { text: 'The group that ___ in the ceremony wore ___ uniforms.', options: ['participated, Class A','protected, informal','governed, mandatory','placed, informal'], answer: 0 },
+  { text: 'Basic training teaches soldiers to be very ___.', options: ['international','disciplined','informal','confirmed'], answer: 1 },
+  { text: 'My family always ___ me when I have a problem.', options: ['sets','supports','gathers','flies'], answer: 1 },
+  { text: 'High school precedes ___.', options: ['middle school','elementary school','college','junior high school'], answer: 2 },
+  { text: '___ your right hand over your ___ when the flag passes.', options: ['Fly, nation','Gather, display','Place, heart','Set, symbol'], answer: 2 },
+  { text: 'Ron Boland has governed ___.', options: ['the discipline of the basic trainees','the national anthem and the flag','all of the senior NCOs on base','the city of Funkton for 16 great years'], answer: 3 },
+  { text: 'There were 12 ___ in NATO when it began in 1949.', options: ['nations','parades','retreats','displays'], answer: 0 },
+  { text: 'Pat received his ___ orders from the military. He\'s leaving next week.', options: ['disciplined','informal','national','official'], answer: 3 },
+  { text: 'The party is very informal.', options: ['You can wear jeans and a T-shirt.','You must wear your Class A uniform.','You should wear a suit and tie.','Don\'t bring your running shoes.'], answer: 0 },
+  { text: 'My father flies ___ in front of our house.', options: ['the flag','his heart','the anthem','his car'], answer: 0 },
+  { text: 'The ___ gives all military personnel extra pay for overseas duty.', options: ['parade','anthem','gathering','government'], answer: 3 },
+  { text: 'He doesn\'t have any debt because ___.', options: ['He doesn\'t put money in the bank.','He paid all his bills.','he needs to pay his bills.','he doesn\'t earn much money.'], answer: 1 },
+  { text: 'The colors of the US ___ are red, white, and blue.', options: ['flag','money','anthem','weather'], answer: 0 },
+  { text: 'We\'re all going to see the ___ downtown. Our neighbor will be marching in it.', options: ['display','position','parade','flag'], answer: 2 },
+  { text: 'General Otis is our base ___.', options: ['anthem','discipline','government','commander'], answer: 3 },
+  { text: 'My ___ is that we must support the military.', options: ['position','heart','occasion','indicate'], answer: 0 },
+  { text: 'A new hospital will ___ next to the police station.', options: ['build','be built','is built','was built'], answer: 1 },
+  { text: 'This patient ___ by Thursday.', options: ['must is seen','must seen','must be seen','must seen be'], answer: 2 },
+  { text: 'Five players ___ by the coach for the new team.', options: ['selected','be will select','will be selected','selected be'], answer: 2 },
+  { text: 'Uniforms ___ worn on weekends.', options: ['don\'t have to be','have to','do have to','has to be'], answer: 0 },
+  { text: 'Children ___ care of by their parents.', options: ['must to take','must took','must be taken','must taken'], answer: 2 },
+  { text: 'The ___ for the garbage disposal is on the wall.', options: ['flag','switch','quality','judgment'], answer: 1 },
+  { text: 'My watch has stopped. I need a new ___.', options: ['mustache','cord','battery','efficiency'], answer: 2 },
+  { text: 'I need to tighten these screws. Can you hand me the ___?', options: ['pen','hanger','air conditioner','screwdriver'], answer: 3 },
+  { text: 'Electricity has many ___ in a home.', options: ['faces','arguments','uses','occasions'], answer: 2 },
+  { text: 'I need my book back. Are you ___ with it yet?', options: ['through','friendly','insulated','charged'], answer: 0 },
+  { text: 'Does the bus ___ on electricity or gasoline?', options: ['conduct','run','fly','protect'], answer: 1 },
+  { text: 'She ___ her hair color from brown to blonde.', options: ['light','lightest','lightened','lightly'], answer: 2 },
+  { text: 'How do I ___ the printer to the computer?', options: ['insulate','attach','help','consider'], answer: 1 },
+  { text: 'The small battery doesn\'t have a very strong ___.', options: ['current','demand','problem','lease'], answer: 0 },
+  { text: 'Don\'t use your ___ hair dryer near the bathtub.', options: ['dishonest','furnished','formal','electric'], answer: 3 },
+  { text: 'The builder put thick ___ under the roof of the new house.', options: ['shorts','insulation','generators','garbage'], answer: 1 },
+  { text: 'There are many ___ which are made from corn.', options: ['observations','uses','products','power'], answer: 2 },
+  { text: 'Brian put the cord ___ the hole in the wall.', options: ['under','at','through','over'], answer: 2 },
+  { text: 'You have to ___ the doorknob to open the door.', options: ['slice','power','charge','twist'], answer: 3 },
+];
+
+const LETTERS = ['A','B','C','D'];
+let order = questions.map((_, i) => i);
+
+function render(){
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = '';
+  order.forEach((qi, idx) => {
+    const q = questions[qi];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = 'card' + idx;
+
+    const bodyText = q.text.replace('___', '<span class="blank"></span>');
+
+    let optsHtml = '';
+    q.options.forEach((opt, oi) => {
+      optsHtml += `
+        <label class="option" id="opt${idx}_${oi}">
+          <input type="radio" name="q${idx}" value="${oi}">
+          <span>${LETTERS[oi]}. ${opt}</span>
+        </label>`;
+    });
+
+    card.innerHTML = `
+      <div class="q-head">
+        <span class="q-num">第 ${idx+1} 題</span>
+        <span class="result-tag" id="tag${idx}"></span>
+      </div>
+      <div class="q-body">${bodyText}</div>
+      <div class="options">${optsHtml}</div>
+    `;
+    c.appendChild(card);
+  });
+}
+
+function resetQuiz(){
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('correct','wrong');
+  });
+  document.querySelectorAll('.option').forEach(o => {
+    o.classList.remove('opt-correct','opt-wrong');
+  });
+  document.querySelectorAll('.result-tag').forEach(t => t.textContent = '');
+  document.getElementById('scoreBar').classList.remove('show');
+}
+
+function shuffleAndReset(){
+  for(let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function gradeQuiz(){
+  let correctCount = 0;
+  let answeredCount = 0;
+
+  order.forEach((qi, idx) => {
+    const q = questions[qi];
+    const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+    const card = document.getElementById('card' + idx);
+    const tag = document.getElementById('tag' + idx);
+    card.classList.remove('correct','wrong');
+
+    if(selected){
+      answeredCount++;
+      const selIdx = parseInt(selected.value);
+      if(selIdx === q.answer){
+        correctCount++;
+        card.classList.add('correct');
+        tag.textContent = '✓ 正確';
+        tag.className = 'result-tag ok';
+      } else {
+        card.classList.add('wrong');
+        tag.textContent = '✗ 答錯';
+        tag.className = 'result-tag no';
+        document.getElementById(`opt${idx}_${selIdx}`).classList.add('opt-wrong');
+      }
+    } else {
+      card.classList.add('wrong');
+      tag.textContent = '未作答';
+      tag.className = 'result-tag no';
+    }
+    document.getElementById(`opt${idx}_${q.answer}`).classList.add('opt-correct');
+  });
+
+  const total = order.length;
+  const percent = Math.round((correctCount / total) * 100);
+  document.getElementById('scoreNum').textContent = `${correctCount} / ${total}（${percent} 分）`;
+  document.getElementById('scoreDetail').textContent = `已作答 ${answeredCount} 題，共 ${total} 題`;
+  document.getElementById('scoreBar').classList.add('show');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+render();
+</script>
+</body>
+</html>
