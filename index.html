@@ -29,7 +29,8 @@ body { font-family: 'Microsoft JhengHei', sans-serif; background: #f0f2f5; color
 .q-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .q-num { font-weight: bold; color: #2c5fa8; }
 .q-body { line-height: 1.7; font-size: 1em; margin-bottom: 6px; }
-.q-zh { line-height: 1.6; font-size: 0.88em; color: #888; margin-bottom: 10px; }
+.q-zh { line-height: 1.6; font-size: 0.88em; color: #888; margin-bottom: 10px; display: none; }
+.q-zh.show { display: block; }
 .blank { display: inline-block; min-width: 60px; border-bottom: 2px solid #999; }
 
 .options { display: flex; flex-direction: column; gap: 6px; }
@@ -153,7 +154,7 @@ function render(){
         <span class="result-tag" id="tag${idx}"></span>
       </div>
       <div class="q-body">${bodyText}</div>
-      <div class="q-zh">${q.zh}</div>
+      <div class="q-zh" id="zh${idx}">${q.zh}</div>
       <div class="options">${optsHtml}</div>
     `;
     c.appendChild(card);
@@ -186,6 +187,7 @@ function checkAnswer(idx){
     document.getElementById(`opt${idx}_${q.answer}`).classList.add('opt-correct');
   }
 
+  document.getElementById('zh' + idx).classList.add('show');
   updateScore();
 }
 
@@ -216,6 +218,7 @@ function resetQuiz(){
     o.classList.remove('opt-correct','opt-wrong');
   });
   document.querySelectorAll('.result-tag').forEach(t => t.textContent = '');
+  document.querySelectorAll('.q-zh').forEach(z => z.classList.remove('show'));
   updateScore();
 }
 
