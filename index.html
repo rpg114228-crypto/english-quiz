@@ -18,8 +18,7 @@ body { font-family: 'Microsoft JhengHei', sans-serif; background: #f0f2f5; color
 
 .container { max-width: 760px; margin: 16px auto; padding: 0 12px; }
 
-.score-bar { background: white; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; display: none; }
-.score-bar.show { display: block; }
+.score-bar { background: white; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; position: sticky; top: 56px; z-index: 9; }
 .score-bar .score-num { font-size: 1.8em; font-weight: bold; color: #2c5fa8; }
 .score-bar .score-detail { font-size: 0.9em; color: #777; margin-top: 4px; }
 
@@ -69,8 +68,8 @@ body { font-family: 'Microsoft JhengHei', sans-serif; background: #f0f2f5; color
 <div class="container">
 
   <div class="score-bar" id="scoreBar">
-    <div class="score-num" id="scoreNum"></div>
-    <div class="score-detail" id="scoreDetail"></div>
+    <div class="score-num" id="scoreNum">0 / 39</div>
+    <div class="score-detail" id="scoreDetail">點選答案後立即顯示對錯</div>
   </div>
 
   <div id="quizContainer"></div>
@@ -78,7 +77,6 @@ body { font-family: 'Microsoft JhengHei', sans-serif; background: #f0f2f5; color
 </div>
 
 <div class="footer-bar">
-  <button class="main-btn" onclick="gradeQuiz()">✅ 對答案</button>
   <button class="main-btn secondary" onclick="resetQuiz()">🔄 重新作答</button>
 </div>
 
@@ -143,7 +141,7 @@ function render(){
     q.options.forEach((opt, oi) => {
       optsHtml += `
         <label class="option" id="opt${idx}_${oi}">
-          <input type="radio" name="q${idx}" value="${oi}">
+          <input type="radio" name="q${idx}" value="${oi}" onchange="checkAnswer(${idx})">
           <span>${LETTERS[oi]}. ${opt}</span>
         </label>`;
     });
@@ -160,6 +158,53 @@ function render(){
   });
 }
 
+function checkAnswer(idx){
+  const qi = order[idx];
+  const q = questions[qi];
+  const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+  const card = document.getElementById('card' + idx);
+  const tag = document.getElementById('tag' + idx);
+
+  card.classList.remove('correct','wrong');
+  q.options.forEach((_, oi) => {
+    document.getElementById(`opt${idx}_${oi}`).classList.remove('opt-correct','opt-wrong');
+  });
+
+  const selIdx = parseInt(selected.value);
+  if(selIdx === q.answer){
+    card.classList.add('correct');
+    tag.textContent = '✓ 正確';
+    tag.className = 'result-tag ok';
+    document.getElementById(`opt${idx}_${q.answer}`).classList.add('opt-correct');
+  } else {
+    card.classList.add('wrong');
+    tag.textContent = '✗ 答錯';
+    tag.className = 'result-tag no';
+    document.getElementById(`opt${idx}_${selIdx}`).classList.add('opt-wrong');
+    document.getElementById(`opt${idx}_${q.answer}`).classList.add('opt-correct');
+  }
+
+  updateScore();
+}
+
+function updateScore(){
+  let correctCount = 0;
+  let answeredCount = 0;
+
+  order.forEach((qi, idx) => {
+    const q = questions[qi];
+    const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+    if(selected){
+      answeredCount++;
+      if(parseInt(selected.value) === q.answer) correctCount++;
+    }
+  });
+
+  const total = order.length;
+  document.getElementById('scoreNum').textContent = `${correctCount} / ${total}`;
+  document.getElementById('scoreDetail').textContent = `已作答 ${answeredCount} / ${total} 題`;
+}
+
 function resetQuiz(){
   document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
   document.querySelectorAll('.card').forEach(c => {
@@ -169,7 +214,7 @@ function resetQuiz(){
     o.classList.remove('opt-correct','opt-wrong');
   });
   document.querySelectorAll('.result-tag').forEach(t => t.textContent = '');
-  document.getElementById('scoreBar').classList.remove('show');
+  updateScore();
 }
 
 function shuffleAndReset(){
@@ -178,47 +223,7 @@ function shuffleAndReset(){
     [order[i], order[j]] = [order[j], order[i]];
   }
   render();
-  window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-function gradeQuiz(){
-  let correctCount = 0;
-  let answeredCount = 0;
-
-  order.forEach((qi, idx) => {
-    const q = questions[qi];
-    const selected = document.querySelector(`input[name="q${idx}"]:checked`);
-    const card = document.getElementById('card' + idx);
-    const tag = document.getElementById('tag' + idx);
-    card.classList.remove('correct','wrong');
-
-    if(selected){
-      answeredCount++;
-      const selIdx = parseInt(selected.value);
-      if(selIdx === q.answer){
-        correctCount++;
-        card.classList.add('correct');
-        tag.textContent = '✓ 正確';
-        tag.className = 'result-tag ok';
-      } else {
-        card.classList.add('wrong');
-        tag.textContent = '✗ 答錯';
-        tag.className = 'result-tag no';
-        document.getElementById(`opt${idx}_${selIdx}`).classList.add('opt-wrong');
-      }
-    } else {
-      card.classList.add('wrong');
-      tag.textContent = '未作答';
-      tag.className = 'result-tag no';
-    }
-    document.getElementById(`opt${idx}_${q.answer}`).classList.add('opt-correct');
-  });
-
-  const total = order.length;
-  const percent = Math.round((correctCount / total) * 100);
-  document.getElementById('scoreNum').textContent = `${correctCount} / ${total}（${percent} 分）`;
-  document.getElementById('scoreDetail').textContent = `已作答 ${answeredCount} 題，共 ${total} 題`;
-  document.getElementById('scoreBar').classList.add('show');
+  updateScore();
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
